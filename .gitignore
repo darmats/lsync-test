@@ -1,2 +1,4 @@
 .idea
 .vagrant
+provisioning/playbook.retry
+vendor
