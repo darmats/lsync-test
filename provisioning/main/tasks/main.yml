@@ -1,0 +1,61 @@
+- name: install zip
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - zip
+    - unzip
+
+- name: install git
+  yum:
+    name: git
+    state: present
+
+- name: install epel
+  yum:
+    name: epel-release
+    state: present
+
+- name: install lsyncd
+  yum:
+    name: lsyncd
+    state: present
+
+# wget http://rpms.famillecollet.com/enterprise/remi.repo -O /etc/yum.repos.d/remi.repo
+- name: add remi repository
+  get_url:
+    url: http://rpms.famillecollet.com/enterprise/remi.repo
+    dest: /etc/yum.repos.d/remi.repo
+
+- name: install php
+  yum:
+    name: "{{ item }}"
+    state: present
+    enablerepo: remi,remi-php71
+  with_items:
+    - php
+    - php-mbstring
+    - php-xml
+
+- name: exec composer install
+  shell: cd /vagrant && php composer.phar install
+
+- name: create sync directory
+  file:
+    path: /opt/.sync
+    state: directory
+    owner: vagrant
+    group: vagrant
+    mode: 0777
+
+- name: copy lsyncd.conf
+  template:
+    src: etc/lsyncd.conf
+    dest: /etc/lsyncd.conf
+
+- name: enable lsyncd
+  systemd:
+    name: lsyncd
+    state: restarted
+    daemon_reload: yes
+    enabled: yes
